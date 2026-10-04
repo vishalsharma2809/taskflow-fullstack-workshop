@@ -1,49 +1,118 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Navbar from "./components/Navbar";
 import AddTask from "./components/AddTask";
+import TaskList from "./components/TaskList";
+
+const API_URL = "http://localhost:5000/api/tasks";
 
 function App() {
   const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const addTask = (title) => {
-    console.log("Adding task:", title);
+  // GET tasks
+  const fetchTasks = async () => {
+    try {
+      const response = await fetch(API_URL);
 
-    const newTask = {
-      id: Date.now(),
-      title: title,
-      completed: false,
-    };
+      if (!response.ok) {
+        throw new Error("Failed to fetch tasks");
+      }
 
-    setTasks((prevTasks) => [...prevTasks, newTask]);
+      const data = await response.json();
+
+      setTasks(data);
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const deleteTask = (id) => {
-    setTasks((prevTasks) =>
-      prevTasks.filter((task) => task.id !== id)
-    );
+  // POST task
+  const addTask = async (title) => {
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add task");
+      }
+
+      const newTask = await response.json();
+
+      setTasks((prevTasks) => [
+        newTask,
+        ...prevTasks,
+      ]);
+    } catch (error) {
+      console.error("Error adding task:", error);
+
+      throw error;
+    }
   };
+
+  // DELETE task
+  const deleteTask = async (id) => {
+    try {
+      const response = await fetch(
+        `${API_URL}/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete task");
+      }
+
+      setTasks((prevTasks) =>
+        prevTasks.filter(
+          (task) => task._id !== id
+        )
+      );
+    } catch (error) {
+      console.error(
+        "Error deleting task:",
+        error
+      );
+    }
+  };
+
+  // Fetch tasks when app loads
+  useEffect(() => {
+    fetchTasks();
+  }, []);
 
   return (
-    <div>
-      <h1>Task Manager</h1>
+    <>
+      <Navbar />
 
-      <AddTask onAdd={addTask} />
+      <main>
+        <h1>TaskFlow</h1>
 
-      <div>
-        {tasks.map((task) => (
-          <div key={task.id}>
-            <span>
-              {task.completed ? "✓" : "○"}
-            </span>
+        <p>
+          Manage your student tasks.
+        </p>
 
-            <span>{task.title}</span>
+        <AddTask onAdd={addTask} />
 
-            <button onClick={() => deleteTask(task.id)}>
-              Delete
-            </button>
-          </div>
-        ))}
-      </div>
-    </div>
+        {loading ? (
+          <p>Loading tasks...</p>
+        ) : (
+          <TaskList
+            tasks={tasks}
+            deleteTask={deleteTask}
+          />
+        )}
+      </main>
+    </>
   );
 }
 

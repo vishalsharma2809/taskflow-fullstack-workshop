@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
+const taskRoutes = require("./routes/taskRoutes");
 
 const app = express();
 
@@ -37,6 +38,5 @@ mongoose
 
 
 
-const taskRoutes = require("./routes/taskRoutes");
 
 app.use("/api/tasks", taskRoutes);

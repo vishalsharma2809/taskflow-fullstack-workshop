@@ -2,20 +2,28 @@ import { useState } from "react";
 
 function AddTask({ onAdd }) {
   const [title, setTitle] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("Form submitted:", title);
+    const trimmedTitle = title.trim();
 
-    if (!title.trim()) {
-      console.log("Empty title");
+    if (!trimmedTitle) {
       return;
     }
 
-    onAdd(title.trim());
+    try {
+      setLoading(true);
 
-    setTitle("");
+      await onAdd(trimmedTitle);
+
+      setTitle("");
+    } catch (error) {
+      console.error("Failed to add task:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -25,10 +33,11 @@ function AddTask({ onAdd }) {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="What do you need to do?"
+        disabled={loading}
       />
 
-      <button type="submit">
-        Add Task
+      <button type="submit" disabled={loading}>
+        {loading ? "Adding..." : "Add Task"}
       </button>
     </form>
   );
