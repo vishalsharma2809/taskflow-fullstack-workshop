@@ -22,3 +22,21 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+const mongoose = require("mongoose");
+
+mongoose
+  .connect(process.env.MONGODB_URI)
+  .then(() => {
+    console.log("MongoDB connected");
+  })
+  .catch((error) => {
+    console.error("MongoDB connection failed:", error);
+  });
+
+
+
+
+const taskRoutes = require("./routes/taskRoutes");
+
+app.use("/api/tasks", taskRoutes);
