@@ -1,13 +1,11 @@
-function TaskCard({ task }) {
+function TaskCard({ task, deleteTask }) {
   return (
-    <div>
-      <span>
-        {task.completed ? "✓" : "○"}
-      </span>
-
+    <div className="task-card">
       <span>{task.title}</span>
 
-      <button>Delete</button>
+      <button onClick={() => deleteTask(task.id)}>
+        Delete
+      </button>
     </div>
   );
 }
